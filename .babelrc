@@ -1,0 +1,7 @@
+{
+  "presets": [["es2015", { "modules": false }], "stage-2", "stage-3", "react", "stage-0"],
+  "plugins": [
+    "transform-decorators-legacy",
+    "emotion"
+  ]
+}
