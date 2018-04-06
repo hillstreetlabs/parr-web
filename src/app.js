@@ -6,7 +6,7 @@ import { injectGlobal } from "emotion";
 injectGlobal`
   body {
     margin: 0;
-    font-family: 'Rubik', sans-serif;
+    font-family: 'Fira Sans', sans-serif;
     font-weight: 400;
   }
 
