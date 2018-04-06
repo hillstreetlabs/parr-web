@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { observable, action } from "mobx";
 import { observer } from "mobx-react";
 import fetch from "isomorphic-fetch";
+import logo from "../assets/images/logo.png";
 
 @observer
 export default class Root extends Component {
@@ -38,7 +39,7 @@ export default class Root extends Component {
   render() {
     return (
       <div>
-        <h1>Parr</h1>
+        <img src={logo} />
         <p>Enter JSON query:</p>
         <textarea onChange={e => this.handleChange(e)} value={this.query} />
         <p>Formatted JSON</p>
