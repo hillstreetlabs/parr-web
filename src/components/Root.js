@@ -3,7 +3,7 @@ import { observable, action } from "mobx";
 import { observer } from "mobx-react";
 import fetch from "isomorphic-fetch";
 import styled from "react-emotion";
-import logo from "../assets/images/logo.svg";
+import logo from "../assets/images/logo.png";
 import Spacer from "./Spacer";
 
 const Flex = styled("div")`
@@ -50,7 +50,7 @@ export default class Root extends Component {
   }
 
   async submitQuery() {
-    const response = await fetch(`${process.env.PARR_URL}/search`, {
+    const response = await fetch(`${process.env.PARR_URL}/blocks`, {
       method: "POST",
       body: this.query,
       headers: {
