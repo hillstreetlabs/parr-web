@@ -14,8 +14,14 @@ injectGlobal`
     box-sizing: border-box;
   }
 
-  a {
+  a,
+  button {
     cursor: pointer;
+
+    &:focus,
+    &:active {
+      outline: none;
+    }
   }
 `;
 
