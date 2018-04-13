@@ -261,7 +261,7 @@ export default class Root extends Component {
                 mode="json"
                 theme="xcode"
                 showGutter={false}
-                value={JSON.stringify(this.results.hits, undefined, 2)}
+                value={JSON.stringify(this.results, undefined, 2)}
                 readOnly={true}
                 width={"100%"}
                 height={"100%"}
