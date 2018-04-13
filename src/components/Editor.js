@@ -238,8 +238,8 @@ export default class Root extends Component {
             <div>Results</div>
             {this.results && (
               <small>
-                Showing <strong>{this.results.hits.length}</strong> of{" "}
-                <strong>{this.results.total}</strong>
+                Showing <strong>{this.results.hits.hits.length}</strong> of{" "}
+                <strong>{this.results.hits.total}</strong>
               </small>
             )}
           </Header>
@@ -249,7 +249,7 @@ export default class Root extends Component {
                 mode="json"
                 theme="xcode"
                 showGutter={false}
-                value={JSON.stringify(this.results.hits, undefined, 2)}
+                value={JSON.stringify(this.results, undefined, 2)}
                 readOnly={true}
                 width={"100%"}
                 height={"100%"}
