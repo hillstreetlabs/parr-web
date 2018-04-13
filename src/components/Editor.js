@@ -9,6 +9,7 @@ import hillStreetLogo from "../assets/images/street.png";
 import Spacer from "./Spacer";
 import brace from "brace";
 import AceEditor from "react-ace";
+import KeyboardShortcuts from "./KeyboardShortcuts";
 
 import "brace/mode/json";
 import "brace/theme/tomorrow";
@@ -114,6 +115,7 @@ const Signature = styled("div")`
 @observer
 export default class Root extends Component {
   @observable results;
+  @observable query;
 
   constructor(props) {
     super(props);
@@ -143,7 +145,12 @@ export default class Root extends Component {
     this.query = e;
   }
 
+  format() {
+    this.query = JSON.stringify(JSON.parse(this.query), undefined, 2);
+  }
+
   async submitQuery() {
+    this.format();
     const response = await fetch(
       `${process.env.PARR_URL}/${this.props.recipe.api}`,
       {
@@ -168,6 +175,10 @@ export default class Root extends Component {
 
   handleKeyDown = e => {
     if (e.metaKey && e.key === "Enter") this.submitQuery();
+    if (e.metaKey && e.key === "p") {
+      e.preventDefault();
+      this.format();
+    }
   };
 
   render() {
@@ -211,6 +222,7 @@ export default class Root extends Component {
           <Header style={{ backgroundColor: "#fafafa" }}>
             <div>{this.props.recipe.title || "Code"}</div>
             <div>
+              <KeyboardShortcuts />
               <Button
                 onClick={() => this.submitQuery()}
                 disabled={!this.queryIsValid}
