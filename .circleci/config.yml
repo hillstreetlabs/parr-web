@@ -1,0 +1,17 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/parr-web
+    docker:
+      - image: circleci/node:8.9.1
+    steps:
+      - checkout
+      - run: sudo yarn global add now@latest
+      - run: yarn install
+      - deploy:
+          command: |
+              now -t ${NOW_TOKEN}
+              now -t ${NOW_TOKEN} alias
+    branches:
+      only:
+        - master
