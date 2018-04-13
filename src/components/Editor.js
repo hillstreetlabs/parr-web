@@ -250,8 +250,8 @@ export default class Root extends Component {
             <div>Results</div>
             {this.results && (
               <small>
-                Showing <strong>{this.results.hits.length}</strong> of{" "}
-                <strong>{this.results.total}</strong>
+                Showing <strong>{this.results.hits.hits.length}</strong> of{" "}
+                <strong>{this.results.hits.total}</strong>
               </small>
             )}
           </Header>
