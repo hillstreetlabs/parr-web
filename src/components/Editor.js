@@ -120,6 +120,14 @@ export default class Root extends Component {
     this.query = JSON.stringify(this.props.recipe.default, undefined, 2);
   }
 
+  componentDidMount() {
+    this.addListeners();
+  }
+
+  componentWillUnmount() {
+    this.removeListeners();
+  }
+
   @computed
   get queryIsValid() {
     try {
@@ -149,6 +157,18 @@ export default class Root extends Component {
     ).then(res => res.json());
     this.results = response.response;
   }
+
+  addListeners() {
+    window.addEventListener("keydown", this.handleKeyDown);
+  }
+
+  removeListeners() {
+    window.removeEventListener("keydown", this.handleKeyDown);
+  }
+
+  handleKeyDown = e => {
+    if (e.metaKey && e.key === "Enter") this.submitQuery();
+  };
 
   render() {
     return (
