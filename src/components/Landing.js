@@ -15,7 +15,7 @@ const Flex = styled("div")`
 `;
 
 const Container = styled("div")`
-  width: 50%;
+  width: 100%;
   overflow-y: scroll;
   padding: 30px;
 
