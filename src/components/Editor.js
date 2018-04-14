@@ -113,21 +113,27 @@ const Signature = styled("div")`
 `;
 
 @observer
-export default class Root extends Component {
+export default class Editor extends Component {
   @observable results;
-  @observable query;
-
-  constructor(props) {
-    super(props);
-    this.query = JSON.stringify(this.props.recipe.default, undefined, 2);
-  }
+  @observable query = "";
+  @observable api = "blocks_transactions";
+  @observable isLoading = false;
+  loadedHash = null;
 
   componentDidMount() {
+    this.loadFromHash();
     this.addListeners();
   }
 
   componentWillUnmount() {
     this.removeListeners();
+  }
+
+  componentDidUpdate(oldProps) {
+    // Load from hash if this hash is different
+    if (this.loadedHash !== this.hash) {
+      this.loadFromHash();
+    }
   }
 
   @computed
@@ -149,20 +155,68 @@ export default class Root extends Component {
     this.query = JSON.stringify(JSON.parse(this.query), undefined, 2);
   }
 
-  async submitQuery() {
-    this.format();
-    const response = await fetch(
-      `${process.env.PARR_URL}/${this.props.recipe.api}`,
+  async saveHash() {
+    const { query: { hash, api } } = await fetch(
+      `${process.env.PARR_URL}/queries`,
       {
         method: "POST",
-        body: this.query,
+        body: JSON.stringify({
+          query: this.query,
+          api: this.api
+        }),
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json"
         }
       }
     ).then(res => res.json());
+    this.loadedHash = hash;
+    if (this.hash !== hash) this.props.history.push(`/editor/${hash}`);
+  }
+
+  async loadFromHash() {
+    if (!this.hash) {
+      this.query = "";
+      this.loadedHash = this.hash;
+      return;
+    }
+
+    this.isLoading = true;
+    this.loadedHash = this.hash;
+    const response = await fetch(
+      `${process.env.PARR_URL}/queries/${this.hash}`
+    ).then(res => res.json());
+    if (response.query) {
+      const { query: { query, api, hash } } = response;
+      // Make sure this request isn't stale
+      if (this.hash !== hash) return;
+
+      this.query = query;
+      this.api = api;
+      this.isLoading = false;
+    } else {
+      // Not found
+      this.props.history.replace("/editor");
+    }
+  }
+
+  async submitQuery() {
+    this.format();
+    this.saveHash();
+    const response = await fetch(`${process.env.PARR_URL}/${this.api}`, {
+      method: "POST",
+      body: this.query,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      }
+    }).then(res => res.json());
     this.results = response.response;
+  }
+
+  changeAPI(api) {
+    this.api = api;
+    this.saveHash();
   }
 
   addListeners() {
@@ -179,7 +233,16 @@ export default class Root extends Component {
       e.preventDefault();
       this.format();
     }
+    if (e.metaKey && e.key === "s") {
+      e.preventDefault();
+      this.format();
+      this.saveHash();
+    }
   };
+
+  get hash() {
+    return this.props.match.params.hash;
+  }
 
   render() {
     return (
@@ -190,16 +253,24 @@ export default class Root extends Component {
             <Spacer />
             <ul>
               <li>
-                <Link to="/editor/addresses">Addresses</Link>
+                <Link to="/editor/e8b7d48aed65a8e67656bceecb528cc4c73611e1">
+                  Addresses
+                </Link>
               </li>
               <li>
-                <Link to="/editor/blocks">Blocks</Link>
+                <Link to="/editor/6953fa72c4ee94652730870a21363ef70435c8a4">
+                  Blocks
+                </Link>
               </li>
               <li>
-                <Link to="/editor/transactions">Transactions</Link>
+                <Link to="/editor/60ee0e07e3305dedcd36930e576542c506bc78e0">
+                  Transactions
+                </Link>
               </li>
               <li>
-                <Link to="/editor/abi">ABI Search</Link>
+                <Link to="/editor/d4f5261eb21a03569466c4096d0f7d9cec496a75">
+                  ABI Search
+                </Link>
               </li>
             </ul>
           </div>
@@ -220,7 +291,21 @@ export default class Root extends Component {
         </Nav>
         <Column style={{ backgroundColor: "#272822" }}>
           <Header style={{ backgroundColor: "#fafafa" }}>
-            <div>{this.props.recipe.title || "Code"}</div>
+            <div>
+              Query
+              <Spacer inline small />
+              <select
+                disabled={this.isLoading}
+                value={this.api}
+                onChange={e => this.changeAPI(e.target.value)}
+              >
+                <option value="addresses">/addresses</option>
+                <option value="blocks_transactions">
+                  /blocks_transactions
+                </option>
+                <option value="implements_abi">/implements_abi</option>
+              </select>
+            </div>
             <div>
               <KeyboardShortcuts />
               <Button
@@ -239,6 +324,7 @@ export default class Root extends Component {
               value={this.query}
               editorProps={{ $blockScrolling: true }}
               tabSize={2}
+              readOnly={this.isLoading}
               width={"100%"}
               height={"100%"}
               focus={true}
