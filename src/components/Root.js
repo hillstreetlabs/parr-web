@@ -9,18 +9,8 @@ export default class Root extends Component {
     return (
       <BrowserRouter>
         <Switch>
-          <Route path="/editor">
-            <Switch>
-              {recipes.map(recipe => (
-                <Route
-                  key={recipe.route}
-                  path={`/editor/${recipe.route}`}
-                  render={props => <Editor recipe={recipe} {...props} />}
-                />
-              ))}
-              <Redirect to="/editor/addresses" />
-            </Switch>
-          </Route>
+          <Route path="/editor/:hash" component={Editor} />
+          <Route path="/editor" component={Editor} />
           <Route component={Landing} />
         </Switch>
       </BrowserRouter>

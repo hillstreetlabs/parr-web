@@ -1,26 +1,26 @@
 export default [
   {
-    route: "addresses",
     title: "Search addresses",
     api: "addresses",
+    hash: "[TODO]",
     default: { query: { term: { type: "address" } } }
   },
   {
-    route: "blocks",
     title: "Search blocks",
     api: "blocks_transactions",
+    hash: "[TODO]",
     default: { query: { term: { type: "block" } } }
   },
   {
-    route: "transactions",
     title: "Search transactions",
     api: "blocks_transactions",
+    hash: "[TODO]",
     default: { query: { term: { type: "transaction" } } }
   },
   {
-    route: "abi",
     title: "Search addresses by ABI",
     api: "implements_abi",
+    hash: "[TODO]",
     default: {
       abi: [
         {
