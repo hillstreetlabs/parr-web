@@ -175,17 +175,19 @@ export default class Editor extends Component {
   }
 
   async loadFromHash() {
+    this.loadedHash = this.hash;
+
     if (!this.hash) {
       this.query = "";
-      this.loadedHash = this.hash;
       return;
     }
 
     this.isLoading = true;
-    this.loadedHash = this.hash;
     const response = await fetch(
       `${process.env.PARR_URL}/queries/${this.hash}`
     ).then(res => res.json());
+    this.isLoading = false;
+
     if (response.query) {
       const { query: { query, api, hash } } = response;
       // Make sure this request isn't stale
@@ -193,7 +195,6 @@ export default class Editor extends Component {
 
       this.query = query;
       this.api = api;
-      this.isLoading = false;
     } else {
       // Not found
       this.props.history.replace("/editor");
