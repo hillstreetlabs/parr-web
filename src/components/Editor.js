@@ -10,6 +10,7 @@ import Spacer from "./Spacer";
 import brace from "brace";
 import AceEditor from "react-ace";
 import KeyboardShortcuts from "./KeyboardShortcuts";
+import FormattedResult from "./FormattedResult";
 
 import "brace/mode/json";
 import "brace/theme/tomorrow";
@@ -112,12 +113,21 @@ const Signature = styled("div")`
   }
 `;
 
+const ResultsFormatLink = styled("a")`
+  text-decoration: ${props => (props.selected ? "underline" : "none")};
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 @observer
 export default class Editor extends Component {
   @observable results;
   @observable query = "";
   @observable api = "blocks_transactions";
   @observable isLoading = false;
+  @observable showFormattedResults = true;
   loadedHash = null;
 
   componentDidMount() {
@@ -158,6 +168,11 @@ export default class Editor extends Component {
     jsonQuery.from = (jsonQuery.from || 0) + (jsonQuery.size || 10);
     this.query = JSON.stringify(jsonQuery, undefined, 2);
     this.submitQuery();
+  }
+
+  @action
+  toggleFormattedResults() {
+    this.showFormattedResults = !this.showFormattedResults;
   }
 
   @action
@@ -348,7 +363,25 @@ export default class Editor extends Component {
         </Column>
         <Column style={{ backgroundColor: "#E0E4EB" }}>
           <Header style={{ backgroundColor: "#CAD3DB", color: "#1C73D4" }}>
-            <div>Results</div>
+            <div>
+              Results
+              <Spacer inline size={0.5} />
+              <small>
+                <ResultsFormatLink
+                  onClick={() => this.toggleFormattedResults()}
+                  selected={this.showFormattedResults}
+                >
+                  Formatted
+                </ResultsFormatLink>
+                <Spacer inline size={0.25} />
+                <ResultsFormatLink
+                  onClick={() => this.toggleFormattedResults()}
+                  selected={!this.showFormattedResults}
+                >
+                  Raw
+                </ResultsFormatLink>
+              </small>
+            </div>
             {this.results && (
               <small>
                 Showing <strong>{this.results.hits.hits.length}</strong> of{" "}
@@ -368,19 +401,26 @@ export default class Editor extends Component {
             )}
           </Header>
           <Body>
-            {this.results && (
-              <AceEditor
-                mode="json"
-                theme="xcode"
-                showGutter={false}
-                value={JSON.stringify(this.results, undefined, 2)}
-                readOnly={true}
-                width={"100%"}
-                height={"100%"}
-                style={{ backgroundColor: "transparent" }}
-                editorProps={{ $blockScrolling: true }}
-              />
-            )}
+            {this.results &&
+              (this.showFormattedResults ? (
+                <div style={{ padding: "10px" }}>
+                  {this.results.hits.hits.map((result, i) => (
+                    <FormattedResult key={i} result={result} />
+                  ))}
+                </div>
+              ) : (
+                <AceEditor
+                  mode="json"
+                  theme="xcode"
+                  showGutter={false}
+                  value={JSON.stringify(this.results, undefined, 2)}
+                  readOnly={true}
+                  width={"100%"}
+                  height={"100%"}
+                  style={{ backgroundColor: "transparent" }}
+                  editorProps={{ $blockScrolling: true }}
+                />
+              ))}
           </Body>
         </Column>
       </Flex>
