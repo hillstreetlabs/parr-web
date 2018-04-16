@@ -14,7 +14,7 @@ export default class KeyboardShortcuts extends Component {
     return (
       <GreyText>
         Format: ⌘P
-        <Spacer inline />
+        <Spacer inline size={0.6} />
         Run: ⌘↵
         <Spacer inline />
       </GreyText>

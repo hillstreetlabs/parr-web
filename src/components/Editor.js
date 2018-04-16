@@ -146,6 +146,20 @@ export default class Editor extends Component {
     }
   }
 
+  @computed
+  get hasNextPage() {
+    const { hits } = this.results;
+    return hits.hits.length < hits.total;
+  }
+
+  @action
+  goToNextPage() {
+    const jsonQuery = JSON.parse(this.query);
+    jsonQuery.from = (jsonQuery.from || 0) + (jsonQuery.size || 10);
+    this.query = JSON.stringify(jsonQuery, undefined, 2);
+    this.submitQuery();
+  }
+
   @action
   handleChange(e) {
     this.query = e;
@@ -339,6 +353,17 @@ export default class Editor extends Component {
               <small>
                 Showing <strong>{this.results.hits.hits.length}</strong> of{" "}
                 <strong>{this.results.hits.total}</strong>
+                {this.hasNextPage && (
+                  <span>
+                    <Spacer inline size={0.5} />
+                    <a
+                      style={{ textDecoration: "underline" }}
+                      onClick={() => this.goToNextPage()}
+                    >
+                      Next Page
+                    </a>
+                  </span>
+                )}
               </small>
             )}
           </Header>
