@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "webpack-dev-server --config webpack.dev.js --port 3000",
-    "build": "webpack --config webpack.prod.js"
+    "build": "webpack --config webpack.prod.js",
+    "start": "node server.js"
   },
   "dependencies": {
     "babel-core": "^6.26.0",
@@ -51,12 +52,5 @@
   },
   "engines": {
     "node": ">=8.5.0"
-  },
-  "now": {
-    "alias": ["parr.io", "www.parr.io"],
-    "env": {
-      "NODE_ENV": "production",
-      "PARR_URL": "https://mainnet.parr.io"
-    }
   }
 }
