@@ -127,6 +127,7 @@ export default class Editor extends Component {
   @observable query = "";
   @observable api = "blocks_transactions";
   @observable isLoading = false;
+  @observable isError = false;
   @observable showFormattedResults = true;
   loadedHash = null;
 
@@ -240,7 +241,11 @@ export default class Editor extends Component {
         Accept: "application/json",
         "Content-Type": "application/json"
       }
-    }).then(res => res.json());
+    }).then(res => {
+      this.isError = res.status !== 200;
+      return res.json();
+    });
+    console.log(response.response);
     this.results = response.response;
   }
 
@@ -362,44 +367,50 @@ export default class Editor extends Component {
           </Body>
         </Column>
         <Column style={{ backgroundColor: "#E0E4EB" }}>
-          <Header style={{ backgroundColor: "#CAD3DB", color: "#1C73D4" }}>
-            <div>
-              Results
-              <Spacer inline size={0.5} />
-              <small>
-                <ResultsFormatLink
-                  onClick={() => this.toggleFormattedResults()}
-                  selected={this.showFormattedResults}
-                >
-                  Formatted
-                </ResultsFormatLink>
-                <Spacer inline size={0.25} />
-                <ResultsFormatLink
-                  onClick={() => this.toggleFormattedResults()}
-                  selected={!this.showFormattedResults}
-                >
-                  Raw
-                </ResultsFormatLink>
-              </small>
-            </div>
-            {this.results && (
-              <small>
-                Showing <strong>{this.results.hits.hits.length}</strong> of{" "}
-                <strong>{this.results.hits.total}</strong>
-                {this.hasNextPage && (
-                  <span>
-                    <Spacer inline size={0.5} />
-                    <a
-                      style={{ textDecoration: "underline" }}
-                      onClick={() => this.goToNextPage()}
-                    >
-                      Next Page
-                    </a>
-                  </span>
-                )}
-              </small>
-            )}
-          </Header>
+          {this.isError ? (
+            <Header style={{ backgroundColor: "#D84A2F", color: "white" }}>
+              <div>Error</div>
+            </Header>
+          ) : (
+            <Header style={{ backgroundColor: "#CAD3DB", color: "#1C73D4" }}>
+              <div>
+                Results
+                <Spacer inline size={0.5} />
+                <small>
+                  <ResultsFormatLink
+                    onClick={() => this.toggleFormattedResults()}
+                    selected={this.showFormattedResults}
+                  >
+                    Formatted
+                  </ResultsFormatLink>
+                  <Spacer inline size={0.25} />
+                  <ResultsFormatLink
+                    onClick={() => this.toggleFormattedResults()}
+                    selected={!this.showFormattedResults}
+                  >
+                    Raw
+                  </ResultsFormatLink>
+                </small>
+              </div>
+              {this.results && (
+                <small>
+                  Showing <strong>{this.results.hits.hits.length}</strong> of{" "}
+                  <strong>{this.results.hits.total}</strong>
+                  {this.hasNextPage && (
+                    <span>
+                      <Spacer inline size={0.5} />
+                      <a
+                        style={{ textDecoration: "underline" }}
+                        onClick={() => this.goToNextPage()}
+                      >
+                        Next Page
+                      </a>
+                    </span>
+                  )}
+                </small>
+              )}
+            </Header>
+          )}
           <Body>
             {this.results &&
               (this.showFormattedResults ? (
