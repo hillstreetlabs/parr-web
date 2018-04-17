@@ -417,6 +417,19 @@ export default class Editor extends Component {
                   {this.results.hits.hits.map((result, i) => (
                     <FormattedResult key={i} result={result} />
                   ))}
+                  {this.results.hits.total == 0 && (
+                    <div style={{ color: "#666" }}>
+                      No results{" "}
+                      <small>
+                        <a
+                          style={{ textDecoration: "underline" }}
+                          onClick={() => this.toggleFormattedResults()}
+                        >
+                          View Raw
+                        </a>
+                      </small>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <AceEditor
