@@ -245,7 +245,6 @@ export default class Editor extends Component {
       this.isError = res.status !== 200;
       return res.json();
     });
-    console.log(response.response);
     this.results = response.response;
   }
 
@@ -413,7 +412,7 @@ export default class Editor extends Component {
           )}
           <Body>
             {this.results &&
-              (this.showFormattedResults ? (
+              (this.showFormattedResults && !this.isError ? (
                 <div style={{ padding: "10px" }}>
                   {this.results.hits.hits.map((result, i) => (
                     <FormattedResult key={i} result={result} />
