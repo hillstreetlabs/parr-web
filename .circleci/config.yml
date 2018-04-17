@@ -7,10 +7,9 @@ jobs:
     steps:
       - checkout
       - run: sudo yarn global add now@latest
-      - run: yarn install
       - deploy:
           command: |
-              now -t ${NOW_TOKEN}
+              now -t ${NOW_TOKEN} ./dist
               now -t ${NOW_TOKEN} alias
     branches:
       only:
