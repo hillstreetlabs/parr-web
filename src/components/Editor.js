@@ -228,7 +228,6 @@ export default class Editor extends Component {
 
       this.query = query;
       this.api = api;
-      this.from = JSON.parse(this.query).from || 0;
     } else {
       // Not found
       this.props.history.replace("/editor");
