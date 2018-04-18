@@ -13,6 +13,8 @@ export default class KeyboardShortcuts extends Component {
   render() {
     return (
       <GreyText>
+        Save: ⌘S
+        <Spacer inline size={0.6} />
         Format: ⌘P
         <Spacer inline size={0.6} />
         Run: ⌘↵
