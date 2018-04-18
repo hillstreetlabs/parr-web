@@ -2,10 +2,12 @@ const webpack = require("webpack");
 const path = require("path");
 const merge = require("webpack-merge");
 const common = require("./webpack.common.js");
+require("dotenv").config();
 
 const config = merge(common, {
+  mode: "development",
   devtool: "eval-source-map",
-  entry: ["babel-polyfill", "./src/app.js", "webpack-hot-middleware/client"],
+  entry: ["babel-polyfill", "./src/app.js"],
   plugins: [
     // new UglifyJSPlugin(),
     new webpack.HotModuleReplacementPlugin(),
@@ -15,7 +17,15 @@ const config = merge(common, {
         PARR_URL: JSON.stringify(process.env.PARR_URL)
       }
     })
-  ]
+  ],
+  optimization: {
+    splitChunks: {
+      chunks: "all"
+    }
+  },
+  devServer: {
+    historyApiFallback: true
+  }
 });
 
 module.exports = config;

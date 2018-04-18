@@ -2,6 +2,7 @@ const path = require("path");
 const webpack = require("webpack");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 const config = {
   context: __dirname,
@@ -11,15 +12,11 @@ const config = {
     path: path.join(__dirname, "dist")
   },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.(js|jsx)$/,
         exclude: /(node_modules)/,
         use: "babel-loader"
-      },
-      {
-        test: /\.(scss|css)/,
-        use: ["style-loader", "css-loader", "sass-loader"]
       },
       {
         test: /\.json$/,
@@ -53,7 +50,10 @@ const config = {
     new CopyWebpackPlugin([
       { from: "./src/index.html" },
       { from: "./src/assets/images/favicon.ico" }
-    ])
+    ]),
+    new HtmlWebpackPlugin({
+      template: "./src/index.html"
+    })
   ]
 };
 
