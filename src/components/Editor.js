@@ -165,10 +165,23 @@ export default class Editor extends Component {
     return this.from + QUERY_SIZE < hits.total;
   }
 
+  @computed
+  get hasPreviousPage() {
+    return this.from > 0;
+  }
+
   @action
   goToNextPage() {
     const jsonQuery = JSON.parse(this.query);
     jsonQuery.from = (jsonQuery.from || 0) + QUERY_SIZE;
+    this.query = JSON.stringify(jsonQuery, undefined, 2);
+    this.submitQuery();
+  }
+
+  @action
+  goToPreviousPage() {
+    const jsonQuery = JSON.parse(this.query);
+    jsonQuery.from = Math.max((jsonQuery.from || 0) - QUERY_SIZE, 0);
     this.query = JSON.stringify(jsonQuery, undefined, 2);
     this.submitQuery();
   }
@@ -237,7 +250,6 @@ export default class Editor extends Component {
   async submitQuery() {
     this.format();
     this.saveHash();
-    this.from = JSON.parse(this.query).from || 0;
     const response = await fetch(`${process.env.PARR_URL}/${this.api}`, {
       method: "POST",
       body: this.query,
@@ -249,6 +261,7 @@ export default class Editor extends Component {
       this.isError = res.status !== 200;
       return res.json();
     });
+    this.from = JSON.parse(this.query).from || 0;
     this.results = response.response;
   }
 
@@ -403,6 +416,17 @@ export default class Editor extends Component {
                     {this.from + this.results.hits.hits.length}
                   </strong>{" "}
                   of <strong>{this.results.hits.total}</strong>
+                  {this.hasPreviousPage && (
+                    <span>
+                      <Spacer inline size={0.5} />
+                      <a
+                        style={{ textDecoration: "underline" }}
+                        onClick={() => this.goToPreviousPage()}
+                      >
+                        Previous Page
+                      </a>
+                    </span>
+                  )}
                   {this.hasNextPage && (
                     <span>
                       <Spacer inline size={0.5} />
