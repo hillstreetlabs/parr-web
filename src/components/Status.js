@@ -22,8 +22,8 @@ export default class Status extends React.Component {
     this.getStatusResults();
     setInterval(this.getStatusResults, 5000);
 
-    this._onMouseLeave = this._onMouseLeave.bind(this);
-    this._onNearestX = this._onNearestX.bind(this);
+    this.onMouseLeave = this.onMouseLeave.bind(this);
+    this.onNearestX = this.onNearestX.bind(this);
   }
 
   async getStatusResults() {
@@ -46,23 +46,22 @@ export default class Status extends React.Component {
     );
   }
 
-  _onNearestX(value, { index }) {
+  onNearestX(value, { index }) {
     this.crosshairValues = this.blockStatus.map(d => d[index]);
   }
 
-  _onMouseLeave() {
+  onMouseLeave() {
     this.crosshairValues = [];
   }
 
-  _crosshairItemFormat(dataPoints) {
+  crosshairItemFormat(dataPoints) {
     return [
       { title: "Indexed", value: dataPoints[0].y },
       { title: "Unindexed", value: dataPoints[1].y }
     ];
   }
 
-  _crosshairTitleFormat(dataPoints) {
-    // console.log({ _crosshairTitleFormat: dataPoints });
+  crosshairTitleFormat(dataPoints) {
     return {
       title: "Block",
       value: dataPoints[0].x
@@ -109,14 +108,14 @@ export default class Status extends React.Component {
             data={Array.from(this.blockStatus[0])}
           />
           <VerticalBarSeries
-            onNearestX={this._onNearestX}
+            onNearestX={this.onNearestX}
             className="vertical-bar-series"
             data={Array.from(this.blockStatus[1])}
           />
           <Crosshair
             values={Array.from(this.crosshairValues)}
-            titleFormat={this._crosshairTitleFormat}
-            itemsFormat={this._crosshairItemFormat}
+            titleFormat={this.crosshairTitleFormat}
+            itemsFormat={this.crosshairItemFormat}
           />
         </XYPlot>
       </div>
