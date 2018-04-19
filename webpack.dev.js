@@ -14,7 +14,8 @@ const config = merge(common, {
     new webpack.DefinePlugin({
       "process.env": {
         NODE_ENV: JSON.stringify("development"),
-        PARR_URL: JSON.stringify(process.env.PARR_URL)
+        PARR_URL: JSON.stringify(process.env.PARR_URL),
+        GA_ID: JSON.stringify(process.env.GA_ID)
       }
     })
   ],
