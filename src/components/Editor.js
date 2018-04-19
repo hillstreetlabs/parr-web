@@ -251,6 +251,7 @@ export default class Editor extends Component {
   }
 
   async submitQuery() {
+    gtag("event", "search"); // Tracking
     this.format();
     this.saveHash();
     const response = await fetch(`${process.env.PARR_URL}/${this.api}`, {

@@ -2,6 +2,7 @@
   "alias": ["parr.io", "www.parr.io"],
   "env": {
     "NODE_ENV": "production",
-    "PARR_URL": "https://mainnet.parr.io"
+    "PARR_URL": "https://mainnet.parr.io",
+    "GA_ID": "@ga-id"
   }
 }
