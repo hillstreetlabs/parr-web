@@ -162,18 +162,18 @@ export default class Editor extends Component {
   @computed
   get hasNextPage() {
     const { hits } = this.results;
-    return this.from + QUERY_SIZE < hits.total;
+    return hits.hits.length > 0 && this.from + hits.hits.length < hits.total;
   }
 
   @computed
   get hasPreviousPage() {
-    return this.from > 0;
+    return this.results.hits.hits.length > 0 && this.from > 0;
   }
 
   @action
   goToNextPage() {
     const jsonQuery = JSON.parse(this.query);
-    jsonQuery.from = (jsonQuery.from || 0) + QUERY_SIZE;
+    jsonQuery.from = (jsonQuery.from || 0) + (jsonQuery.size || QUERY_SIZE);
     this.query = JSON.stringify(jsonQuery, undefined, 2);
     this.submitQuery();
   }
@@ -181,7 +181,10 @@ export default class Editor extends Component {
   @action
   goToPreviousPage() {
     const jsonQuery = JSON.parse(this.query);
-    jsonQuery.from = Math.max((jsonQuery.from || 0) - QUERY_SIZE, 0);
+    jsonQuery.from = Math.max(
+      (jsonQuery.from || 0) - (jsonQuery.size || QUERY_SIZE),
+      0
+    );
     this.query = JSON.stringify(jsonQuery, undefined, 2);
     this.submitQuery();
   }
@@ -261,8 +264,8 @@ export default class Editor extends Component {
       this.isError = res.status !== 200;
       return res.json();
     });
-    this.from = JSON.parse(this.query).from || 0;
     this.results = response.response;
+    this.from = JSON.parse(this.query).from || 0;
   }
 
   changeAPI(api) {
@@ -411,10 +414,14 @@ export default class Editor extends Component {
               {this.results && (
                 <small>
                   Showing{" "}
-                  <strong>
-                    {this.from + 1} -{" "}
-                    {this.from + this.results.hits.hits.length}
-                  </strong>{" "}
+                  {this.results.hits.hits.length > 0 ? (
+                    <strong>
+                      {this.from + 1} -{" "}
+                      {this.from + this.results.hits.hits.length}
+                    </strong>
+                  ) : (
+                    <strong>0</strong>
+                  )}{" "}
                   of <strong>{this.results.hits.total}</strong>
                   {this.hasPreviousPage && (
                     <span>
@@ -423,7 +430,7 @@ export default class Editor extends Component {
                         style={{ textDecoration: "underline" }}
                         onClick={() => this.goToPreviousPage()}
                       >
-                        Previous Page
+                        Previous
                       </a>
                     </span>
                   )}
@@ -434,7 +441,7 @@ export default class Editor extends Component {
                         style={{ textDecoration: "underline" }}
                         onClick={() => this.goToNextPage()}
                       >
-                        Next Page
+                        Next
                       </a>
                     </span>
                   )}
