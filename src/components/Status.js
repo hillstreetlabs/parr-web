@@ -30,23 +30,20 @@ export default class Status extends React.Component {
     const response = await fetch(
       `${process.env.PARR_URL}/stats/monitoring`
     ).then(res => res.json());
-    const indexed = Array.from(response.response.hits.hits).map(
-      (result, index) => {
-        return {
+    this.blockStatus = Array.from(response.response.hits.hits).reduce(
+      (statusData, result) => {
+        statusData[0].push({
           x: result._source.hash,
           y: result._source.indexed_count
-        };
-      }
-    );
-    const unindexed = Array.from(response.response.hits.hits).map(
-      (result, index) => {
-        return {
+        });
+        statusData[1].push({
           x: result._source.hash,
           y: result._source.transaction_count - result._source.indexed_count
-        };
-      }
+        });
+        return statusData;
+      },
+      [[], []]
     );
-    this.blockStatus = [indexed, unindexed];
   }
 
   _onNearestX(value, { index }) {
