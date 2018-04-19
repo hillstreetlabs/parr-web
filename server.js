@@ -1,27 +1,16 @@
-const webpack = require("webpack");
-const express = require("express");
 require("dotenv").config();
-
-const config = require("./webpack.dev");
+const express = require("express");
 const port = process.env.PORT || 3000;
 const path = require("path");
-
-const compiler = webpack(config);
+const serveStatic = require("serve-static");
 
 const app = express();
 
-app.use(
-  require("webpack-dev-middleware")(compiler, {
-    noInfo: true,
-    publicPath: config.output.publicPath
-  })
-);
-
-app.use(require("webpack-hot-middleware")(compiler));
+app.use(serveStatic("dist"));
 
 // Serve index.html
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "src/index.html"));
+  res.sendFile(path.join(__dirname, "dist/index.html"));
 });
 
 app.listen(port, () => console.log(`Listening at localhost:${port}`));

@@ -16,8 +16,9 @@ import "brace/mode/json";
 import "brace/theme/tomorrow";
 import "brace/theme/xcode";
 
-const navWidth = 200;
-const headerHeight = 50;
+const NAV_WIDTH = 200;
+const HEADER_HEIGHT = 50;
+const QUERY_SIZE = 10;
 
 const Flex = styled("div")`
   display: flex;
@@ -28,7 +29,7 @@ const Flex = styled("div")`
 `;
 
 const Nav = styled("div")`
-  width: ${navWidth}px;
+  width: ${NAV_WIDTH}px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -42,7 +43,7 @@ const Nav = styled("div")`
 `;
 
 const Column = styled("div")`
-  width: calc((100% - ${navWidth}px) / 2);
+  width: calc((100% - ${NAV_WIDTH}px) / 2);
   background-color: ${props => props.color};
   flex: none;
   flex-direction: column;
@@ -51,7 +52,7 @@ const Column = styled("div")`
 `;
 
 const Header = styled("div")`
-  height: ${headerHeight}px;
+  height: ${HEADER_HEIGHT}px;
   padding: 10px;
   display: flex;
   justify-content: space-between;
@@ -59,7 +60,7 @@ const Header = styled("div")`
 `;
 
 const Body = styled("div")`
-  height: calc(100% - ${headerHeight}px);
+  height: calc(100% - ${HEADER_HEIGHT}px);
   overflow-y: scroll;
 `;
 
@@ -127,7 +128,9 @@ export default class Editor extends Component {
   @observable query = "";
   @observable api = "blocks_transactions";
   @observable isLoading = false;
+  @observable isError = false;
   @observable showFormattedResults = true;
+  @observable from = 0;
   loadedHash = null;
 
   componentDidMount() {
@@ -159,13 +162,29 @@ export default class Editor extends Component {
   @computed
   get hasNextPage() {
     const { hits } = this.results;
-    return hits.hits.length < hits.total;
+    return hits.hits.length > 0 && this.from + hits.hits.length < hits.total;
+  }
+
+  @computed
+  get hasPreviousPage() {
+    return this.results.hits.hits.length > 0 && this.from > 0;
   }
 
   @action
   goToNextPage() {
     const jsonQuery = JSON.parse(this.query);
-    jsonQuery.from = (jsonQuery.from || 0) + (jsonQuery.size || 10);
+    jsonQuery.from = (jsonQuery.from || 0) + (jsonQuery.size || QUERY_SIZE);
+    this.query = JSON.stringify(jsonQuery, undefined, 2);
+    this.submitQuery();
+  }
+
+  @action
+  goToPreviousPage() {
+    const jsonQuery = JSON.parse(this.query);
+    jsonQuery.from = Math.max(
+      (jsonQuery.from || 0) - (jsonQuery.size || QUERY_SIZE),
+      0
+    );
     this.query = JSON.stringify(jsonQuery, undefined, 2);
     this.submitQuery();
   }
@@ -185,20 +204,19 @@ export default class Editor extends Component {
   }
 
   async saveHash() {
-    const { query: { hash, api } } = await fetch(
-      `${process.env.PARR_URL}/queries`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          query: this.query,
-          api: this.api
-        }),
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json"
-        }
+    const {
+      query: { hash, api }
+    } = await fetch(`${process.env.PARR_URL}/queries`, {
+      method: "POST",
+      body: JSON.stringify({
+        query: this.query,
+        api: this.api
+      }),
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
       }
-    ).then(res => res.json());
+    }).then(res => res.json());
     this.loadedHash = hash;
     if (this.hash !== hash) this.props.history.push(`/editor/${hash}`);
   }
@@ -218,7 +236,9 @@ export default class Editor extends Component {
     this.isLoading = false;
 
     if (response.query) {
-      const { query: { query, api, hash } } = response;
+      const {
+        query: { query, api, hash }
+      } = response;
       // Make sure this request isn't stale
       if (this.hash !== hash) return;
 
@@ -240,8 +260,12 @@ export default class Editor extends Component {
         Accept: "application/json",
         "Content-Type": "application/json"
       }
-    }).then(res => res.json());
+    }).then(res => {
+      this.isError = res.status !== 200;
+      return res.json();
+    });
     this.results = response.response;
+    this.from = JSON.parse(this.query).from || 0;
   }
 
   changeAPI(api) {
@@ -362,47 +386,72 @@ export default class Editor extends Component {
           </Body>
         </Column>
         <Column style={{ backgroundColor: "#E0E4EB" }}>
-          <Header style={{ backgroundColor: "#CAD3DB", color: "#1C73D4" }}>
-            <div>
-              Results
-              <Spacer inline size={0.5} />
-              <small>
-                <ResultsFormatLink
-                  onClick={() => this.toggleFormattedResults()}
-                  selected={this.showFormattedResults}
-                >
-                  Formatted
-                </ResultsFormatLink>
-                <Spacer inline size={0.25} />
-                <ResultsFormatLink
-                  onClick={() => this.toggleFormattedResults()}
-                  selected={!this.showFormattedResults}
-                >
-                  Raw
-                </ResultsFormatLink>
-              </small>
-            </div>
-            {this.results && (
-              <small>
-                Showing <strong>{this.results.hits.hits.length}</strong> of{" "}
-                <strong>{this.results.hits.total}</strong>
-                {this.hasNextPage && (
-                  <span>
-                    <Spacer inline size={0.5} />
-                    <a
-                      style={{ textDecoration: "underline" }}
-                      onClick={() => this.goToNextPage()}
-                    >
-                      Next Page
-                    </a>
-                  </span>
-                )}
-              </small>
-            )}
-          </Header>
+          {this.isError ? (
+            <Header style={{ backgroundColor: "#D84A2F", color: "white" }}>
+              <div>Error</div>
+            </Header>
+          ) : (
+            <Header style={{ backgroundColor: "#CAD3DB", color: "#1C73D4" }}>
+              <div>
+                Results
+                <Spacer inline size={0.5} />
+                <small>
+                  <ResultsFormatLink
+                    onClick={() => this.toggleFormattedResults()}
+                    selected={this.showFormattedResults}
+                  >
+                    Formatted
+                  </ResultsFormatLink>
+                  <Spacer inline size={0.25} />
+                  <ResultsFormatLink
+                    onClick={() => this.toggleFormattedResults()}
+                    selected={!this.showFormattedResults}
+                  >
+                    Raw
+                  </ResultsFormatLink>
+                </small>
+              </div>
+              {this.results && (
+                <small>
+                  Showing{" "}
+                  {this.results.hits.hits.length > 0 ? (
+                    <strong>
+                      {this.from + 1} -{" "}
+                      {this.from + this.results.hits.hits.length}
+                    </strong>
+                  ) : (
+                    <strong>0</strong>
+                  )}{" "}
+                  of <strong>{this.results.hits.total}</strong>
+                  {this.hasPreviousPage && (
+                    <span>
+                      <Spacer inline size={0.5} />
+                      <a
+                        style={{ textDecoration: "underline" }}
+                        onClick={() => this.goToPreviousPage()}
+                      >
+                        Previous
+                      </a>
+                    </span>
+                  )}
+                  {this.hasNextPage && (
+                    <span>
+                      <Spacer inline size={0.5} />
+                      <a
+                        style={{ textDecoration: "underline" }}
+                        onClick={() => this.goToNextPage()}
+                      >
+                        Next
+                      </a>
+                    </span>
+                  )}
+                </small>
+              )}
+            </Header>
+          )}
           <Body>
             {this.results &&
-              (this.showFormattedResults ? (
+              (this.showFormattedResults && !this.isError ? (
                 <div style={{ padding: "10px" }}>
                   {this.results.hits.hits.map((result, i) => (
                     <FormattedResult key={i} result={result} />
