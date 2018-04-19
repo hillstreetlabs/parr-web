@@ -8,7 +8,6 @@ import {
   VerticalGridLines,
   HorizontalGridLines,
   VerticalBarSeries,
-  VerticalBarSeriesCanvas,
   DiscreteColorLegend,
   Crosshair
 } from "react-vis";
