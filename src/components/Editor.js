@@ -42,6 +42,10 @@ const Nav = styled("div")`
   & ul a {
     color: black;
   }
+
+  @media screen and (max-width: 480px) {
+    display: none;
+  }
 `;
 
 const Column = styled("div")`
@@ -51,6 +55,22 @@ const Column = styled("div")`
   flex-direction: column;
   display: flex;
   height: 100%;
+`;
+
+const EditorColumn = styled(Column)`
+  background-color: #272822;
+
+  @media screen and (max-width: 480px) {
+    display: none;
+  }
+`;
+
+const ResultsColumn = styled(Column)`
+  background-color: #e0e4eb;
+
+  @media screen and (max-width: 480px) {
+    width: 100%;
+  }
 `;
 
 const Header = styled("div")`
@@ -218,19 +238,20 @@ export default class Editor extends Component {
   }
 
   async saveHash() {
-    const {
-      query: { hash, api }
-    } = await fetch(`${process.env.PARR_URL}/queries`, {
-      method: "POST",
-      body: JSON.stringify({
-        query: this.query,
-        api: this.api
-      }),
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
+    const { query: { hash, api } } = await fetch(
+      `${process.env.PARR_URL}/queries`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          query: this.query,
+          api: this.api
+        }),
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        }
       }
-    }).then(res => res.json());
+    ).then(res => res.json());
     this.loadedHash = hash;
     if (this.hash !== hash) this.props.history.push(`/editor/${hash}`);
   }
@@ -250,9 +271,7 @@ export default class Editor extends Component {
     this.isLoading = false;
 
     if (response.query) {
-      const {
-        query: { query, api, hash }
-      } = response;
+      const { query: { query, api, hash } } = response;
       // Make sure this request isn't stale
       if (this.hash !== hash) return;
 
@@ -355,7 +374,7 @@ export default class Editor extends Component {
             </div>
           </Signature>
         </Nav>
-        <Column style={{ backgroundColor: "#272822" }}>
+        <EditorColumn>
           <Header style={{ backgroundColor: "#fafafa" }}>
             <div>
               Query
@@ -396,8 +415,8 @@ export default class Editor extends Component {
               focus={true}
             />
           </Body>
-        </Column>
-        <Column style={{ backgroundColor: "#E0E4EB" }}>
+        </EditorColumn>
+        <ResultsColumn>
           <Header
             style={
               this.isError
@@ -513,7 +532,7 @@ export default class Editor extends Component {
                 />
               ))}
           </Body>
-        </Column>
+        </ResultsColumn>
       </Flex>
     );
   }
