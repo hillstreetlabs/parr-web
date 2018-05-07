@@ -11,6 +11,8 @@ import brace from "brace";
 import AceEditor from "react-ace";
 import KeyboardShortcuts from "./KeyboardShortcuts";
 import FormattedResult from "./FormattedResult";
+import FormattedAggregations from "./FormattedAggregations";
+import ReactJson from "react-json-view";
 
 import "brace/mode/json";
 import "brace/theme/tomorrow";
@@ -122,13 +124,19 @@ const ResultsFormatLink = styled("a")`
   }
 `;
 
+const Recipes = styled("div")`
+  & a {
+    color: #333;
+    font-size: 0.9em;
+  }
+`;
+
 @observer
 export default class Editor extends Component {
   @observable results;
   @observable query = "";
   @observable api = "blocks_transactions";
   @observable isLoading = false;
-  @observable isError = false;
   @observable showFormattedResults = true;
   @observable from = 0;
   loadedHash = null;
@@ -168,6 +176,12 @@ export default class Editor extends Component {
   @computed
   get hasPreviousPage() {
     return this.results.hits.hits.length > 0 && this.from > 0;
+  }
+
+  @computed
+  get isError() {
+    if (!this.results) return false;
+    return this.results.statusCode && this.results.statusCode != 200;
   }
 
   @action
@@ -262,7 +276,6 @@ export default class Editor extends Component {
         "Content-Type": "application/json"
       }
     }).then(res => {
-      this.isError = res.status !== 200;
       return res.json();
     });
     this.results = response.response;
@@ -305,29 +318,26 @@ export default class Editor extends Component {
         <Nav>
           <div>
             <Logo src={logo} />
-            <Spacer />
-            <ul>
-              <li>
-                <Link to="/editor/e8b7d48aed65a8e67656bceecb528cc4c73611e1">
-                  Addresses
-                </Link>
-              </li>
-              <li>
-                <Link to="/editor/6953fa72c4ee94652730870a21363ef70435c8a4">
-                  Blocks
-                </Link>
-              </li>
-              <li>
-                <Link to="/editor/60ee0e07e3305dedcd36930e576542c506bc78e0">
-                  Transactions
-                </Link>
-              </li>
-              <li>
-                <Link to="/editor/d4f5261eb21a03569466c4096d0f7d9cec496a75">
-                  ABI Search
-                </Link>
-              </li>
-            </ul>
+            <Spacer size={1.5} />
+            <Recipes>
+              <div>Sample Queries</div>
+              <Spacer size={0.5} />
+              <Link to="/editor/e8b7d48aed65a8e67656bceecb528cc4c73611e1">
+                Search all addresses
+              </Link>
+              <Spacer size={0.3} />
+              <Link to="/editor/6953fa72c4ee94652730870a21363ef70435c8a4">
+                Search all blocks
+              </Link>
+              <Spacer size={0.3} />
+              <Link to="/editor/60ee0e07e3305dedcd36930e576542c506bc78e0">
+                Search all transactions
+              </Link>
+              <Spacer size={0.3} />
+              <Link to="/editor/d4f5261eb21a03569466c4096d0f7d9cec496a75">
+                Search addresses by ABI
+              </Link>
+            </Recipes>
           </div>
 
           <Signature>
@@ -387,32 +397,34 @@ export default class Editor extends Component {
           </Body>
         </Column>
         <Column style={{ backgroundColor: "#E0E4EB" }}>
-          {this.isError ? (
-            <Header style={{ backgroundColor: "#D84A2F", color: "white" }}>
-              <div>Error</div>
-            </Header>
-          ) : (
-            <Header style={{ backgroundColor: "#CAD3DB", color: "#1C73D4" }}>
-              <div>
-                Results
-                <Spacer inline size={0.5} />
-                <small>
-                  <ResultsFormatLink
-                    onClick={() => this.toggleFormattedResults()}
-                    selected={this.showFormattedResults}
-                  >
-                    Formatted
-                  </ResultsFormatLink>
-                  <Spacer inline size={0.25} />
-                  <ResultsFormatLink
-                    onClick={() => this.toggleFormattedResults()}
-                    selected={!this.showFormattedResults}
-                  >
-                    Raw
-                  </ResultsFormatLink>
-                </small>
-              </div>
-              {this.results && (
+          <Header
+            style={
+              this.isError
+                ? { backgroundColor: "#D84A2F", color: "white" }
+                : { backgroundColor: "#CAD3DB", color: "#1C73D4" }
+            }
+          >
+            <div>
+              {this.isError ? "Error" : "Results"}
+              <Spacer inline size={0.5} />
+              <small>
+                <ResultsFormatLink
+                  onClick={() => this.toggleFormattedResults()}
+                  selected={this.showFormattedResults}
+                >
+                  Formatted
+                </ResultsFormatLink>
+                <Spacer inline size={0.25} />
+                <ResultsFormatLink
+                  onClick={() => this.toggleFormattedResults()}
+                  selected={!this.showFormattedResults}
+                >
+                  Raw
+                </ResultsFormatLink>
+              </small>
+            </div>
+            {!this.isError &&
+              this.results && (
                 <small>
                   Showing{" "}
                   {this.results.hits.hits.length > 0 ? (
@@ -448,26 +460,41 @@ export default class Editor extends Component {
                   )}
                 </small>
               )}
-            </Header>
-          )}
+          </Header>
           <Body>
             {this.results &&
-              (this.showFormattedResults && !this.isError ? (
+              (this.showFormattedResults ? (
                 <div style={{ padding: "10px" }}>
-                  {this.results.hits.hits.map((result, i) => (
-                    <FormattedResult key={i} result={result} />
-                  ))}
-                  {this.results.hits.total == 0 && (
-                    <div style={{ color: "#666" }}>
-                      No results{" "}
-                      <small>
-                        <a
-                          style={{ textDecoration: "underline" }}
-                          onClick={() => this.toggleFormattedResults()}
-                        >
-                          View Raw
-                        </a>
-                      </small>
+                  {this.isError ? (
+                    <ReactJson
+                      src={this.results}
+                      name={false}
+                      collapsed={1}
+                      enableClipboard={false}
+                    />
+                  ) : (
+                    <div>
+                      {this.results.aggregations && (
+                        <FormattedAggregations
+                          source={this.results.aggregations}
+                        />
+                      )}
+                      {this.results.hits.hits.map((result, i) => (
+                        <FormattedResult key={i} result={result} />
+                      ))}
+                      {this.results.hits.total == 0 && (
+                        <div style={{ color: "#666" }}>
+                          No results{" "}
+                          <small>
+                            <a
+                              style={{ textDecoration: "underline" }}
+                              onClick={() => this.toggleFormattedResults()}
+                            >
+                              View Raw
+                            </a>
+                          </small>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
