@@ -30,6 +30,28 @@ const Logo = styled("img")`
   height: 80px;
 `;
 
+const Button = styled("button")`
+  font-size: 1.3em;
+  padding: 1em 0.8em;
+  background-color: #e0e4eb;
+  color: #333;
+  border: none;
+  border-bottom: 2px solid #ccc;
+  border-radius: 3px;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: #bbb;
+    background-color: #e7ebf2;
+    color: black;
+  }
+
+  &:active {
+    border-bottom: 1px solid #ccc;
+    transform: translate(0px, 1px);
+  }
+`;
+
 @observer
 export default class Root extends Component {
   @observable query = JSON.stringify({ query: { match_all: {} } });
@@ -69,7 +91,10 @@ export default class Root extends Component {
         <h1 style={{ fontWeight: 300 }}>
           A query tool for the Ethereum blockchain.
         </h1>
-        <Link to="/editor">Try it out &rarr;</Link>
+        <Spacer />
+        <Link to="/editor">
+          <Button>Try it out &rarr;</Button>
+        </Link>
       </Container>
     );
   }

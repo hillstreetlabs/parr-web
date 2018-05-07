@@ -4,12 +4,6 @@ import styled from "react-emotion";
 import Spacer from "./Spacer";
 import ReactJson from "react-json-view";
 
-const ETHERSCAN_TYPE_MAP = {
-  transaction: "tx",
-  block: "block",
-  address: "address"
-};
-
 const Result = styled("div")`
   width: 100%;
   background-color: #fafafa;
@@ -24,7 +18,7 @@ const Header = styled("div")`
   flex-direction: row;
   justify-content: space-between;
   padding: 5px 10px;
-  background-color: #1fccb2;
+  background-color: #4656eb;
   color: white;
 
   & a {
@@ -38,25 +32,16 @@ const Body = styled("div")`
 `;
 
 @observer
-export default class FormattedResult extends Component {
-  get etherscanLink() {
-    const [type, id] = this.props.result._source.id.split(":", 2);
-    return `https://etherscan.io/${ETHERSCAN_TYPE_MAP[type]}/${id}`;
-  }
-
+export default class FormattedAggregations extends Component {
   render() {
-    const [type, id] = this.props.result._source.id.split(":", 2);
     return (
       <Result>
         <Header>
-          <div style={{ textTransform: "capitalize" }}>{type}</div>
-          <a href={this.etherscanLink} target="_blank">
-            <small>View on Etherscan</small>
-          </a>
+          <div>Aggregations</div>
         </Header>
         <Body>
           <ReactJson
-            src={this.props.result}
+            src={this.props.source}
             name={false}
             collapsed={1}
             enableClipboard={false}
