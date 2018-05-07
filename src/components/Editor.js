@@ -133,7 +133,7 @@ const Recipes = styled("div")`
 
 @observer
 export default class Editor extends Component {
-  @observable results;
+  @observable.shallow results;
   @observable query = "";
   @observable api = "blocks_transactions";
   @observable isLoading = false;
@@ -258,6 +258,7 @@ export default class Editor extends Component {
 
       this.query = query;
       this.api = api;
+      this.submitQuery();
     } else {
       // Not found
       this.props.history.replace("/editor");
